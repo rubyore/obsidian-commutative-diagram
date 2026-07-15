@@ -1,5 +1,4 @@
 import { finishRenderMath, renderMath } from "obsidian";
-import { getBiggerSize, getRawSize, getSize } from "./helper";
 
 export function renderSVGCanvas(width: number, height: number): SVGSVGElement {
   let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -19,6 +18,7 @@ export function renderSVGCanvas(width: number, height: number): SVGSVGElement {
 
 export function renderCleanMath(latex: string): HTMLElement {
   let html = renderMath(latex, true);
+  finishRenderMath();
   html.style.padding = '0'
   html.style.margin = '0'
   html.style.margin = "5px"

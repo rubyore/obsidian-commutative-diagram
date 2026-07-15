@@ -1,14 +1,4 @@
-export interface Cell {
-  row: number;
-  col: number;
-  object: string;
-  arrows: Arrow[];
-}
-
-interface Arrow {
-    direction: string;
-    label: string;
-}
+import { Arrow, Cell } from "./types";
 
 export function parseTikzSyntax(input: string): Cell[][] {
   const rows: string[][] = [];
