@@ -13,7 +13,9 @@ export default class ExamplePlugin extends Plugin {
 		const allArrows: AbstractArrow[] = [];
 		
 		const table = el.createEl('table');
-      	const body = table.createEl('tbody');
+		table.style.marginTop = "-32px"
+		table.style.marginBottom = "-32px"
+		const body = table.createEl('tbody');
 		for (var row of grid) {
 			const tr = body.createEl('tr');
 			for (var cell of row) {
@@ -64,9 +66,11 @@ export default class ExamplePlugin extends Plugin {
 		let svg = renderSVGCanvas(tablebbox.width, tablebbox.height);
 		el.appendChild(svg);
 
+		/**
 		allObjects.forEach(obj => {
 			svg.appendChild(renderRect(obj.getBoundingClientRect(), el))
 		})
+		*/
 
 		for (var arrow of allArrows) {
 			let from = (table.firstChild! as HTMLElement).children[arrow.from.row]!.children[arrow.from.col]!.querySelector("mjx-container")! as HTMLElement;

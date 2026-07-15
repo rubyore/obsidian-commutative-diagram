@@ -6,11 +6,11 @@ export function renderSVGCanvas(width: number, height: number): SVGSVGElement {
   let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.style.display = "block"
   svg.style.position = "absolute"
-  svg.style.top = "16px"
+  svg.style.top = "-32px"
   svg.style.width = `${width}px`;
   svg.style.height = `${height}px`;
   svg.style.zIndex = "-1000"
-  svg.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
+  //svg.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
   svg.setAttribute('width', `${width}`)
   svg.setAttribute('height', `${height}`)
   svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
