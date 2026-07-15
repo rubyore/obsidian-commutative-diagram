@@ -13,19 +13,20 @@ export default class ExamplePlugin extends Plugin {
 		const allArrows: AbstractArrow[] = [];
 		
 		const table = el.createEl('table');
+		table.style.borderSpacing = "60px"
+		table.style.borderCollapse = "separate"
+		table.style.marginTop = "-48px"
+		table.style.marginBottom = "-48px"
       	const body = table.createEl('tbody');
 		for (var row of grid) {
 			const tr = body.createEl('tr');
 			for (var cell of row) {
 				const td = tr.createEl('td')
 				td.style.padding = "0"
-				td.style.minWidth = "100px"
-				td.style.minHeight = "100px"
 				td.style.borderStyle = "hidden"
 				let div = td.createDiv();
-				div.style.minWidth = "60px"
-				div.style.minHeight = "60px"
-				div.style.margin = "30px"
+				div.style.minWidth = "30px"
+				div.style.minHeight = "30px"
 				div.style.display = "flex"
 				div.style.alignItems = "center"
 				div.style.justifyContent = "center"
@@ -65,6 +66,9 @@ export default class ExamplePlugin extends Plugin {
 			svg.appendChild(head)
 			svg.appendChild(label)
 		}
+
+		el.style.display = "flex"
+		el.style.justifyContent = "center"
 	})
   }
 }
