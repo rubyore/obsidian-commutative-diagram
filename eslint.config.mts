@@ -29,4 +29,10 @@ export default defineConfig(
 		},
 	},
 	...obsidianmd.configs.recommended,
+	{
+		rules: {
+			'eslint-comments/require-description': 'off',
+			'eslint-comments/no-restricted-disable': 'off'
+		}
+	}
 );

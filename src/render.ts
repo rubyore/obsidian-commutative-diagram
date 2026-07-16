@@ -11,35 +11,17 @@ export async function renderTable(source: string): Promise<[HTMLTableElement, HT
   const objects: HTMLElement[] = [];
 	const arrows: AbstractArrow[] = [];
   
-  
-  // eslint-disable-next-line eslint-comments/no-restricted-disable -- See below
   // eslint-disable-next-line obsidianmd/prefer-create-el -- .createEl causes <table> to be appended to document, which causes incorrect behaviour. 
   const table = document.createElement('table');
-
-  table.setCssProps({
-    'margin-top': '-32px',
-    'margin-bottom': '-32px'
-  })
+  table.addClass('commutative-diagram-table');
 
   const body = table.createEl('tbody');
 
   for (let row of grid) {
     const tr = body.createEl('tr');
     for (let cell of row) {
-      const td = tr.createEl('td')
-      td.setCssProps({
-        'padding': '0px',
-        'border-style': 'hidden',
-      });
-      let div = td.createDiv();
-      div.setCssProps({
-        'minWidth': '50px',
-        'minHeight': '50px',
-        'margin': '30px',
-        'display': 'flex',
-        'align-items': 'center',
-        'justify-content': 'center'
-      })
+      const td = tr.createEl('td',  { cls: 'commutative-diagram-td'})
+      let div = td.createDiv({ cls: 'commutative-diagram-container' });
       if (cell.object != '') {
         const renderedMath = await renderCleanMath(cell.object);
         objects.push(renderedMath);
@@ -61,11 +43,12 @@ export async function renderTable(source: string): Promise<[HTMLTableElement, HT
 }
 
 export function renderSVGCanvas(width: number, height: number): SVGSVGElement {
+  // eslint-disable-next-line obsidianmd/prefer-create-el
   let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.addClass('commutative-diagram-svg')
+
+  // eslint-disable-next-line obsidianmd/no-static-styles-assignment
   svg.setCssProps({
-    'display': 'block',
-    'position': 'absolute',
-    'top': '-32px',
     'width': `${width}px`,
     'height': `${height}px`,
   })
@@ -78,17 +61,15 @@ export function renderSVGCanvas(width: number, height: number): SVGSVGElement {
 
 export async function renderCleanMath(latex: string) {
   let html = renderMath(latex, true);
+  html.addClass('commutative-diagram-math');
   await finishRenderMath();
-  html.setCssProps({
-    'padding': '0px',
-    'margin': '5px',
-  })
-  return html
+  return html;
 }
 
 export function renderRect(rect: DOMRect, el: HTMLElement): SVGRectElement {
   let { x, y, width, height } = rect;
   let offset = el.getBoundingClientRect();
+  // eslint-disable-next-line obsidianmd/prefer-create-el
   let r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
   r.setAttribute('x', `${x - offset.x}`)
   r.setAttribute('y', `${y - offset.y}`)
@@ -104,6 +85,7 @@ async function renderLine(start: DOMRect, end: DOMRect, el: HTMLElement) {
   let offset = el.getBoundingClientRect();
   let { from, to } = computeIntersections(start, end)
 
+  // eslint-disable-next-line obsidianmd/prefer-create-el
   let path = document.createElementNS("http://www.w3.org/2000/svg", 'path');
   path.setAttribute('d', `M ${from.x - offset.x} ${from.y - offset.y} L ${to.x - offset.x} ${to.y - offset.y}`)
   path.setAttribute('stroke', `${textColor}`)
@@ -113,6 +95,7 @@ async function renderLine(start: DOMRect, end: DOMRect, el: HTMLElement) {
 }
 
 function renderArrowHead(x: number, y: number, angle: number): SVGPathElement {
+  // eslint-disable-next-line obsidianmd/prefer-create-el
   let path = document.createElementNS("http://www.w3.org/2000/svg", 'path');
   path.setAttribute('d', `M ${x - 7} ${y - 7} A 7 7 0 0 0 ${x} ${y} M ${x} ${y} A 7 7 0 0 0 ${x - 7} ${y + 7}`)
   path.setAttribute('stroke', `${textColor}`)
@@ -136,29 +119,20 @@ export async function renderArrow(start: DOMRect, end: DOMRect, el: HTMLElement,
   let head = renderArrowHead(endx, endy, angle);
 
   const label = renderMath(str, false)
-  finishRenderMath();
+  await finishRenderMath();
 
+  // eslint-disable-next-line obsidianmd/prefer-create-el
   const FO = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
   FO.setAttribute("x", `${centerx - 50}`)
   FO.setAttribute("y", `${centery - 50 - 10}`)
   FO.setAttribute("width", `${100}`)
   FO.setAttribute("height", `${100}`)
-  FO.setCssProps({
-    'transform-origin': 'center',
-    'transform-box': 'fill-box',
-    'transform': 'scale(0.7)',
-  })
+  FO.addClass('commutative-diagram-foreignObject')
   const flex = document.createElementNS(
     "http://www.w3.org/1999/xhtml",
     "div"
   );
-  flex.setCssProps({
-    'display': 'flex',
-    'align-items': 'center',
-    'justify-content': 'center',
-    'width': '100%',
-    'height': '100%',
-  });
+  flex.addClass('commutative-diagram-inner-flex')
 
   const div = document.createElementNS(
     "http://www.w3.org/1999/xhtml",

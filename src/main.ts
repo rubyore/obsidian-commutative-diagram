@@ -26,6 +26,7 @@ export default class ExamplePlugin extends Plugin {
 					let d = c.firstChild as HTMLElement // <div>
 					let w = c.getBoundingClientRect().width;
 					let h = c.getBoundingClientRect().height;
+					// eslint-disable-next-line obsidianmd/no-static-styles-assignment -- We do not know the proper width/height until rendering all the math
 					d.setCssProps({
 						'width': `${w - 60}px`,
 						'height': `${h - 60}px`,
@@ -42,9 +43,7 @@ export default class ExamplePlugin extends Plugin {
 				objects.forEach(obj => {
 					svg.appendChild(renderRect(obj.getBoundingClientRect(), el))
 				})
-				svg.setCssProps({
-					'background-color': 'rgba(255, 255, 255, 0.5)',
-				});
+				svg.addClass('commutative-diagram-svg-debug')
 			}
 
 			for (let arrow of arrows) {
@@ -59,10 +58,7 @@ export default class ExamplePlugin extends Plugin {
 				svg.appendChild(label)
 			}
 
-			el.setCssProps({
-				'display': 'flex',
-				'justify-content': 'center',
-			});
+			el.addClass('commutative-diagram-el')
 		})
 	}
 

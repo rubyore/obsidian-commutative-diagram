@@ -9,6 +9,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	toggleDebug: false,
 };
 
+// eslint-disable-next-line obsidianmd/settings-tab/prefer-setting-definitions
 export class SettingTab extends PluginSettingTab {
 
 	plugin: MyPlugin;
