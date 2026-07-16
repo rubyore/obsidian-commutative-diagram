@@ -1,8 +1,6 @@
 import { Plugin } from 'obsidian';
-import { renderArrow, renderCleanMath, renderRect, renderSVGCanvas, renderTable } from './render';
+import { renderArrow, renderRect, renderSVGCanvas, renderTable } from './render';
 import { getRawSize, getSize } from './helper';
-import { parseTikzSyntax, targetCoordinates } from './parser';
-import { AbstractArrow } from './types';
 import { DEFAULT_SETTINGS, PluginSettings, SettingTab } from './settings';
 
 export default class ExamplePlugin extends Plugin {
