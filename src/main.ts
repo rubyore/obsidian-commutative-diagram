@@ -1,5 +1,5 @@
 import { Plugin } from 'obsidian';
-import { renderArrow, renderCleanMath, renderRect, renderSVGCanvas } from './render';
+import { renderArrow, renderCleanMath, renderRect, renderSVGCanvas, renderTable } from './render';
 import { getRawSize, getSize } from './helper';
 import { parseTikzSyntax, targetCoordinates } from './parser';
 import { AbstractArrow } from './types';
@@ -13,50 +13,16 @@ export default class ExamplePlugin extends Plugin {
 		this.addSettingTab(new SettingTab(this.app, this));
 
 		this.registerMarkdownCodeBlockProcessor('tikzcd', async (source, el, ctx) => {
-			const grid = parseTikzSyntax(source);
 
-			const allObjects: HTMLElement[] = [];
-			const allArrows: AbstractArrow[] = [];
-
-			const table = el.createEl('table');
-			table.style.marginTop = "-32px"
-			table.style.marginBottom = "-32px"
-			const body = table.createEl('tbody');
-			for (var row of grid) {
-				const tr = body.createEl('tr');
-				for (var cell of row) {
-					const td = tr.createEl('td')
-					td.style.padding = "0px"
-					td.style.borderStyle = "hidden"
-					let div = td.createDiv();
-					div.style.minWidth = "50px"
-					div.style.minHeight = "50px"
-					div.style.margin = "30px"
-					div.style.display = "flex"
-					div.style.alignItems = "center"
-					div.style.justifyContent = "center"
-					if (cell.object != '') {
-						const renderedMath = renderCleanMath(cell.object);
-						allObjects.push(renderedMath);
-						div.appendChild(renderedMath);
-					}
-
-					cell.arrows.forEach(arrow => {
-						let { row, col } = targetCoordinates(cell, arrow.direction)
-						allArrows.push({
-							from: cell,
-							to: grid[row]![col]!,
-							label: arrow.label
-						})
-					})
-				}
-			}
+			let [table, objects, arrows] = renderTable(source);
+			el.appendChild(table);
 			// Wait for all objects to be in the layout
-			for (var obj of allObjects) {
+			for (var obj of objects) {
 				await getSize(obj);
 			}
 
 			// We need to adjust sizes of <div> inside <td> to make sure it occupies the whole <td>
+			let body = table.firstChild as HTMLElement;
 			Array.from(body.children).forEach(r => {
 				Array.from(r.children).forEach(c => {
 					let d = c.firstChild as HTMLElement // <div>
@@ -73,13 +39,13 @@ export default class ExamplePlugin extends Plugin {
 			el.appendChild(svg);
 
 			if (this.settings.toggleDebug) {
-				allObjects.forEach(obj => {
+				objects.forEach(obj => {
 					svg.appendChild(renderRect(obj.getBoundingClientRect(), el))
 				})
 				svg.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
 			}
 
-			for (var arrow of allArrows) {
+			for (var arrow of arrows) {
 				let from = (table.firstChild! as HTMLElement).children[arrow.from.row]!.children[arrow.from.col]!.querySelector("mjx-container")! as HTMLElement;
 				let to = (table.firstChild! as HTMLElement).children[arrow.to.row]!.children[arrow.to.col]!.querySelector("mjx-container")! as HTMLElement;
 

@@ -1,7 +1,53 @@
 import { finishRenderMath, renderMath } from "obsidian";
 import { computeIntersections } from "./helper";
+import { parseTikzSyntax, targetCoordinates } from "./parser";
+import { AbstractArrow } from "./types";
 
 const textColor = document.body.getCssPropertyValue("--text-normal");
+
+export function renderTable(source: string): [HTMLTableElement, HTMLElement[], AbstractArrow[]] {
+
+  const grid = parseTikzSyntax(source);
+  const objects: HTMLElement[] = [];
+	const arrows: AbstractArrow[] = [];
+  
+  const table = document.createElement('table');
+  table.style.marginTop = "-32px"
+  table.style.marginBottom = "-32px"
+  const body = table.createEl('tbody');
+
+  for (var row of grid) {
+    const tr = body.createEl('tr');
+    for (var cell of row) {
+      const td = tr.createEl('td')
+      td.style.padding = "0px"
+      td.style.borderStyle = "hidden"
+      let div = td.createDiv();
+      div.style.minWidth = "50px"
+      div.style.minHeight = "50px"
+      div.style.margin = "30px"
+      div.style.display = "flex"
+      div.style.alignItems = "center"
+      div.style.justifyContent = "center"
+      if (cell.object != '') {
+        const renderedMath = renderCleanMath(cell.object);
+        objects.push(renderedMath);
+        div.appendChild(renderedMath);
+      }
+
+      cell.arrows.forEach(arrow => {
+        let { row, col } = targetCoordinates(cell, arrow.direction)
+        arrows.push({
+          from: cell,
+          to: grid[row]![col]!,
+          label: arrow.label
+        })
+      })
+    }
+  }
+
+  return [table, objects, arrows];
+}
 
 export function renderSVGCanvas(width: number, height: number): SVGSVGElement {
   let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -69,20 +115,13 @@ export async function renderArrow(start: DOMRect, end: DOMRect, el: HTMLElement,
 
   let offset = el.getBoundingClientRect();
   let { from, to } = computeIntersections(start, end);
-  let centerx = (from.x + to.x)/2 - offset.x
-  let centery = (from.y + to.y)/2 - offset.y
+  let centerx = (from.x + to.x) / 2 - offset.x
+  let centery = (from.y + to.y) / 2 - offset.y
 
   let angle = Math.atan2(
     to.y - from.y, to.x - from.x
   ) / (2 * Math.PI) * 360
   let head = renderArrowHead(endx, endy, angle);
-
-  if (angle > 131) {
-    console.log(head, angle)
-    console.log(end.x, end.y)
-    console.log(start.x, start.y)
-  }
-
 
   const label = renderMath(str, false)
   finishRenderMath();
