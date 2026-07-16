@@ -5,7 +5,7 @@ export async function getRawSize(el: HTMLElement): Promise<DOMRect> {
             return rect;
         }
 
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise(resolve => window.setTimeout(resolve, 0));
     }
 }
 
@@ -17,7 +17,7 @@ export async function getSize(el: HTMLElement): Promise<DOMRect> {
             return new DOMRect(rect.x - 5, rect.y - 5, rect.width + 10, rect.height + 10)
         }
 
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise(resolve => window.setTimeout(resolve, 0));
     }
 }
 

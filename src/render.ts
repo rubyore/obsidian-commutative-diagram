@@ -5,32 +5,43 @@ import { AbstractArrow } from "./types";
 
 const textColor = document.body.getCssPropertyValue("--text-normal");
 
-export function renderTable(source: string): [HTMLTableElement, HTMLElement[], AbstractArrow[]] {
+export async function renderTable(source: string): Promise<[HTMLTableElement, HTMLElement[], AbstractArrow[]]> {
 
   const grid = parseTikzSyntax(source);
   const objects: HTMLElement[] = [];
 	const arrows: AbstractArrow[] = [];
   
+  
+  // eslint-disable-next-line eslint-comments/no-restricted-disable -- See below
+  // eslint-disable-next-line obsidianmd/prefer-create-el -- .createEl causes <table> to be appended to document, which causes incorrect behaviour. 
   const table = document.createElement('table');
-  table.style.marginTop = "-32px"
-  table.style.marginBottom = "-32px"
+
+  table.setCssProps({
+    'margin-top': '-32px',
+    'margin-bottom': '-32px'
+  })
+
   const body = table.createEl('tbody');
 
-  for (var row of grid) {
+  for (let row of grid) {
     const tr = body.createEl('tr');
-    for (var cell of row) {
+    for (let cell of row) {
       const td = tr.createEl('td')
-      td.style.padding = "0px"
-      td.style.borderStyle = "hidden"
+      td.setCssProps({
+        'padding': '0px',
+        'border-style': 'hidden',
+      });
       let div = td.createDiv();
-      div.style.minWidth = "50px"
-      div.style.minHeight = "50px"
-      div.style.margin = "30px"
-      div.style.display = "flex"
-      div.style.alignItems = "center"
-      div.style.justifyContent = "center"
+      div.setCssProps({
+        'minWidth': '50px',
+        'minHeight': '50px',
+        'margin': '30px',
+        'display': 'flex',
+        'align-items': 'center',
+        'justify-content': 'center'
+      })
       if (cell.object != '') {
-        const renderedMath = renderCleanMath(cell.object);
+        const renderedMath = await renderCleanMath(cell.object);
         objects.push(renderedMath);
         div.appendChild(renderedMath);
       }
@@ -51,12 +62,13 @@ export function renderTable(source: string): [HTMLTableElement, HTMLElement[], A
 
 export function renderSVGCanvas(width: number, height: number): SVGSVGElement {
   let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.style.display = "block"
-  svg.style.position = "absolute"
-  svg.style.top = "-32px"
-  svg.style.width = `${width}px`;
-  svg.style.height = `${height}px`;
-  svg.style.zIndex = "-1000"
+  svg.setCssProps({
+    'display': 'block',
+    'position': 'absolute',
+    'top': '-32px',
+    'width': `${width}px`,
+    'height': `${height}px`,
+  })
   svg.setAttribute('width', `${width}`)
   svg.setAttribute('height', `${height}`)
   svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
@@ -64,12 +76,13 @@ export function renderSVGCanvas(width: number, height: number): SVGSVGElement {
   return svg;
 }
 
-export function renderCleanMath(latex: string): HTMLElement {
+export async function renderCleanMath(latex: string) {
   let html = renderMath(latex, true);
-  finishRenderMath();
-  html.style.padding = '0'
-  html.style.margin = '0'
-  html.style.margin = "5px"
+  await finishRenderMath();
+  html.setCssProps({
+    'padding': '0px',
+    'margin': '5px',
+  })
   return html
 }
 
@@ -95,7 +108,6 @@ async function renderLine(start: DOMRect, end: DOMRect, el: HTMLElement) {
   path.setAttribute('d', `M ${from.x - offset.x} ${from.y - offset.y} L ${to.x - offset.x} ${to.y - offset.y}`)
   path.setAttribute('stroke', `${textColor}`)
   path.setAttribute('fill', `${textColor}`)
-  path.style.zIndex = "-1000"
 
   return { path: path, endx: to.x - offset.x, endy: to.y - offset.y }
 }
@@ -131,18 +143,23 @@ export async function renderArrow(start: DOMRect, end: DOMRect, el: HTMLElement,
   FO.setAttribute("y", `${centery - 50 - 10}`)
   FO.setAttribute("width", `${100}`)
   FO.setAttribute("height", `${100}`)
-  FO.style.transformOrigin = "center"
-  FO.style.transformBox = "fill-box"
-  FO.style.transform = "scale(0.7)"
+  FO.setCssProps({
+    'transform-origin': 'center',
+    'transform-box': 'fill-box',
+    'transform': 'scale(0.7)',
+  })
   const flex = document.createElementNS(
     "http://www.w3.org/1999/xhtml",
     "div"
   );
-  flex.style.display = "flex"
-  flex.style.alignItems = "center"
-  flex.style.justifyContent = "center"
-  flex.style.width = "100%"
-  flex.style.height = "100%"
+  flex.setCssProps({
+    'display': 'flex',
+    'align-items': 'center',
+    'justify-content': 'center',
+    'width': '100%',
+    'height': '100%',
+  });
+
   const div = document.createElementNS(
     "http://www.w3.org/1999/xhtml",
     "div"

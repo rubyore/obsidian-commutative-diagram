@@ -12,10 +12,10 @@ export default class ExamplePlugin extends Plugin {
 
 		this.registerMarkdownCodeBlockProcessor('tikzcd', async (source, el, ctx) => {
 
-			let [table, objects, arrows] = renderTable(source);
+			let [table, objects, arrows] = await renderTable(source);
 			el.appendChild(table);
 			// Wait for all objects to be in the layout
-			for (var obj of objects) {
+			for (let obj of objects) {
 				await getSize(obj);
 			}
 
@@ -24,10 +24,12 @@ export default class ExamplePlugin extends Plugin {
 			Array.from(body.children).forEach(r => {
 				Array.from(r.children).forEach(c => {
 					let d = c.firstChild as HTMLElement // <div>
-					let w = c.getBoundingClientRect().width
-					let h = c.getBoundingClientRect().height
-					d.style.width = `${w - 60}px`
-					d.style.height = `${h - 60}px`
+					let w = c.getBoundingClientRect().width;
+					let h = c.getBoundingClientRect().height;
+					d.setCssProps({
+						'width': `${w - 60}px`,
+						'height': `${h - 60}px`,
+					});
 				})
 			})
 
@@ -40,12 +42,14 @@ export default class ExamplePlugin extends Plugin {
 				objects.forEach(obj => {
 					svg.appendChild(renderRect(obj.getBoundingClientRect(), el))
 				})
-				svg.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
+				svg.setCssProps({
+					'background-color': 'rgba(255, 255, 255, 0.5)',
+				});
 			}
 
-			for (var arrow of arrows) {
-				let from = (table.firstChild! as HTMLElement).children[arrow.from.row]!.children[arrow.from.col]!.querySelector("mjx-container")! as HTMLElement;
-				let to = (table.firstChild! as HTMLElement).children[arrow.to.row]!.children[arrow.to.col]!.querySelector("mjx-container")! as HTMLElement;
+			for (let arrow of arrows) {
+				let from = (table.firstChild as HTMLElement).children[arrow.from.row]!.children[arrow.from.col]!.querySelector("mjx-container") as HTMLElement;
+				let to = (table.firstChild as HTMLElement).children[arrow.to.row]!.children[arrow.to.col]!.querySelector("mjx-container") as HTMLElement;
 
 				let xrect = await getSize(from);
 				let yrect = await getSize(to)
@@ -55,8 +59,10 @@ export default class ExamplePlugin extends Plugin {
 				svg.appendChild(label)
 			}
 
-			el.style.display = "flex"
-			el.style.justifyContent = "center"
+			el.setCssProps({
+				'display': 'flex',
+				'justify-content': 'center',
+			});
 		})
 	}
 
