@@ -22,6 +22,7 @@ export async function renderTable(source: string): Promise<[HTMLTableElement, HT
     for (let cell of row) {
       const td = tr.createEl('td',  { cls: 'commutative-diagram-td'})
       let div = td.createDiv({ cls: 'commutative-diagram-container' });
+
       if (cell.object != '') {
         const renderedMath = await renderCleanMath(cell.object);
         objects.push(renderedMath);
@@ -62,7 +63,7 @@ export function renderSVGCanvas(width: number, height: number): SVGSVGElement {
 export async function renderCleanMath(latex: string) {
   let html = renderMath(latex, true);
   html.addClass('commutative-diagram-math');
-  await finishRenderMath();
+  void finishRenderMath();
   return html;
 }
 
@@ -118,8 +119,8 @@ export async function renderArrow(start: DOMRect, end: DOMRect, el: HTMLElement,
   ) / (2 * Math.PI) * 360
   let head = renderArrowHead(endx, endy, angle);
 
-  const label = renderMath(str, false)
-  await finishRenderMath();
+  const label = renderMath(str, false);
+  void finishRenderMath();
 
   // eslint-disable-next-line obsidianmd/prefer-create-el
   const FO = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
