@@ -2,6 +2,7 @@ export type AbstractArrow = {
     from: Cell;
     to: Cell
     label: string;
+    hook: boolean;
 }
 
 export type Cell = {
@@ -14,4 +15,5 @@ export type Cell = {
 export type Arrow = {
     direction: string;
     label: string;
+    isHook: boolean;
 }

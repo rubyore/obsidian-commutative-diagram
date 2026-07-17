@@ -1,6 +1,6 @@
 import { Plugin } from 'obsidian';
 import { renderArrow, renderRect, renderSVGCanvas, renderTable } from './render';
-import { getRawSize, getSize } from './helper';
+import { getRawSize } from './helper';
 import { DEFAULT_SETTINGS, PluginSettings, SettingTab } from './settings';
 
 export default class ExamplePlugin extends Plugin {
@@ -16,7 +16,7 @@ export default class ExamplePlugin extends Plugin {
 			el.appendChild(table);
 			// Wait for all objects to be in the layout
 			for (let obj of objects) {
-				await getSize(obj);
+				await getRawSize(obj);
 			}
 
 			// We need to adjust sizes of <div> inside <td> to make sure it occupies the whole <td>
@@ -26,7 +26,7 @@ export default class ExamplePlugin extends Plugin {
 					let d = c.firstChild as HTMLElement // <div>
 					let w = c.getBoundingClientRect().width;
 					let h = c.getBoundingClientRect().height;
-					// eslint-disable-next-line obsidianmd/no-static-styles-assignment -- We do not know the proper width/height until rendering all the math
+					// eslint-disable-next-line obsidianmd/no-static-styles-assignment
 					d.setCssProps({
 						'width': `${w - 60}px`,
 						'height': `${h - 60}px`,
@@ -50,12 +50,13 @@ export default class ExamplePlugin extends Plugin {
 				let from = (table.firstChild as HTMLElement).children[arrow.from.row]!.children[arrow.from.col]!.querySelector("mjx-container") as HTMLElement;
 				let to = (table.firstChild as HTMLElement).children[arrow.to.row]!.children[arrow.to.col]!.querySelector("mjx-container") as HTMLElement;
 
-				let xrect = await getSize(from);
-				let yrect = await getSize(to)
-				let [path, head, label] = await renderArrow(xrect, yrect, el, arrow.label);
+				let xrect = await getRawSize(from);
+				let yrect = await getRawSize(to)
+				let [path, head, tail, label] = await renderArrow(xrect, yrect, el, arrow.label, arrow.hook);
 				svg.appendChild(path)
 				svg.appendChild(head)
 				svg.appendChild(label)
+				svg.appendChild(tail)
 			}
 
 			el.addClass('commutative-diagram-el')

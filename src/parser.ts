@@ -149,6 +149,7 @@ function parseArrow(source: string): Arrow {
 
     let direction = "";
     let label = "";
+    let isHook = false;
 
     for (const part of splitArrowOptions(options)) {
         const quoted = part.match(/^"(.*)"$/);
@@ -160,11 +161,17 @@ function parseArrow(source: string): Arrow {
         if (/^[udlr]+$/.test(part)) {
             direction = part;
         }
+
+        const hook = part.match(/^hook$/);
+        if (hook) {
+          isHook = true;
+        }
     }
 
     return {
         direction,
         label,
+        isHook
     };
 }
 

@@ -9,16 +9,13 @@ export async function getRawSize(el: HTMLElement): Promise<DOMRect> {
     }
 }
 
-// Adds a 5px buffer to each side
-export async function getSize(el: HTMLElement): Promise<DOMRect> {
-    while (true) {
-        const rect = el.getBoundingClientRect();
-        if (rect.width > 0 && rect.height > 0) {
-            return new DOMRect(rect.x - 5, rect.y - 5, rect.width + 10, rect.height + 10)
-        }
-
-        await new Promise(resolve => window.setTimeout(resolve, 0));
-    }
+export function addBuffer(rect: DOMRect, buffer: number) {
+  return new DOMRect(
+    rect.x - buffer,
+    rect.y - buffer,
+    rect.width + buffer*2,
+    rect.height + buffer*2
+  )
 }
 
 export function computeIntersections(a: DOMRect, b: DOMRect) {

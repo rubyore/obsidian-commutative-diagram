@@ -1,5 +1,5 @@
 import { finishRenderMath, renderMath } from "obsidian";
-import { computeIntersections } from "./helper";
+import { addBuffer, computeIntersections } from "./helper";
 import { parseTikzSyntax, targetCoordinates } from "./parser";
 import { AbstractArrow } from "./types";
 
@@ -8,6 +8,7 @@ const textColor = document.body.getCssPropertyValue("--text-normal");
 export async function renderTable(source: string): Promise<[HTMLTableElement, HTMLElement[], AbstractArrow[]]> {
 
   const grid = parseTikzSyntax(source);
+  console.log(grid)
   const objects: HTMLElement[] = [];
 	const arrows: AbstractArrow[] = [];
   
@@ -34,7 +35,8 @@ export async function renderTable(source: string): Promise<[HTMLTableElement, HT
         arrows.push({
           from: cell,
           to: grid[row]![col]!,
-          label: arrow.label
+          label: arrow.label,
+          hook: arrow.isHook,
         })
       })
     }
@@ -106,11 +108,37 @@ function renderArrowHead(x: number, y: number, angle: number): SVGPathElement {
   return path
 }
 
-export async function renderArrow(start: DOMRect, end: DOMRect, el: HTMLElement, str: string): Promise<[SVGPathElement, SVGPathElement, SVGForeignObjectElement]> {
-  let { path, endx, endy } = await renderLine(start, end, el);
+function renderArrowTailHook(x: number, y: number, untilx: number, untily: number, angle: number): SVGPathElement {
+  let dist = Math.sqrt((x - untilx)**2 + (y - untily)**2);
+  // eslint-disable-next-line obsidianmd/prefer-create-el
+  let path = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+  path.setAttribute('d', `M ${x + 10} ${y - 10} A 5 5 0 0 0 ${x + 10} ${y} M ${x + 10} ${y} L ${x + dist} ${y}`);
+  path.setAttribute('stroke', `${textColor}`);
+  path.setAttribute('transform', `rotate(${angle} ${x} ${y})`)
+
+  return path;
+}
+
+function renderArrowTailNormal(x: number, y: number, untilx: number, untily: number, angle: number): SVGPathElement {
+  let dist = Math.sqrt((x - untilx)**2 + (y - untily)**2);
+  // eslint-disable-next-line obsidianmd/prefer-create-el
+  let path = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+  path.setAttribute('d', `M ${x} ${y} L ${x + dist} ${y}`);
+  path.setAttribute('stroke', `${textColor}`);
+  path.setAttribute('transform', `rotate(${angle} ${x} ${y})`)
+
+  return path;
+}
+
+export async function renderArrow(start: DOMRect, end: DOMRect, el: HTMLElement, str: string, hook: boolean): Promise<[SVGPathElement, SVGPathElement, SVGPathElement, SVGForeignObjectElement]> {
+  let linestart = addBuffer(start, 20);
+  let tailstart = addBuffer(start, 5);
+  end = addBuffer(end, 5);
+
+  let { path, endx, endy } = await renderLine(linestart, end, el);
 
   let offset = el.getBoundingClientRect();
-  let { from, to } = computeIntersections(start, end);
+  let { from, to } = computeIntersections(linestart, end);
   let centerx = (from.x + to.x) / 2 - offset.x
   let centery = (from.y + to.y) / 2 - offset.y
 
@@ -119,6 +147,13 @@ export async function renderArrow(start: DOMRect, end: DOMRect, el: HTMLElement,
   ) / (2 * Math.PI) * 360
   let head = renderArrowHead(endx, endy, angle);
 
+  let { from: from2, to: to2 } = computeIntersections(tailstart, end);
+  let tail;
+  if (hook) {
+    tail = renderArrowTailHook(from2.x - offset.x, from2.y - offset.y, from.x - offset.x, from.y - offset.y, angle);
+  } else {
+    tail = renderArrowTailNormal(from2.x - offset.x, from2.y - offset.y, from.x - offset.x, from.y - offset.y, angle);
+  }
   const label = renderMath(str, false);
   void finishRenderMath();
 
@@ -143,5 +178,5 @@ export async function renderArrow(start: DOMRect, end: DOMRect, el: HTMLElement,
   flex.appendChild(div)
   div.appendChild(label)
 
-  return [path, head, FO];
+  return [path, head, tail, FO];
 }
