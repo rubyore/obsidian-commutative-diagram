@@ -55,7 +55,7 @@ export default class ExamplePlugin extends Plugin {
 
 				let xrect = await getRawSize(from);
 				let yrect = await getRawSize(to);
-				let [path, head, tail, label] = await renderArrow(convertToSVGRect(xrect, el), convertToSVGRect(yrect, el), arrow.label, arrow.hook);
+				let [path, head, tail, label] = await renderArrow(convertToSVGRect(xrect, el), convertToSVGRect(yrect, el), arrow.label, arrow.hook, arrow.mapsto);
 				svg.appendChild(path);
 				svg.appendChild(head);
 				svg.appendChild(label)

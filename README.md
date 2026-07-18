@@ -17,7 +17,7 @@ produces
 
 ![Example 1](./imgs/example-1.png)
 
-Currently, the only valid arguments in `\arrow[...]` are the direction (i.e. any permutation of `lrud`) and the label, which must be quoted with `"`. 
+Currently, the only valid arguments in `\arrow[...]` are the direction (i.e. any permutation of `l`, `r`, `u`, `d`), the label (which must be enclosed with double quotes `"`), and the options `hook` and `maps to`.  
 
 ## Supported features
 

@@ -40,6 +40,7 @@ export async function renderTable(cells: Cell[][]): Promise<{
 					to: cells[row]![col]!,
 					label: arrow.label,
 					hook: arrow.hook,
+					mapsto: arrow.mapsto,
 				})
 			})
 		}
@@ -132,6 +133,19 @@ function renderArrowTailHook(coord: SVGCoordinate, untilx: number, untily: numbe
 	return path;
 }
 
+function renderArrowTailMapsto(coord: SVGCoordinate, untilx: number, untily: number, angle: number): SVGPathElement {
+	let { x, y } = coord;
+	let dist = Math.sqrt((x - untilx) ** 2 + (y - untily) ** 2);
+
+	// eslint-disable-next-line obsidianmd/prefer-create-el
+	let path = document.createElementNS("http://www.w3.org/2000/svg", 'path');
+	path.setAttribute('d', `M ${x} ${y - 7} L ${x} ${y + 7} M ${x} ${y} L ${x + dist} ${y}`);
+	path.setAttribute('stroke', `${textColor}`);
+	path.setAttribute('transform', `rotate(${angle} ${x} ${y})`);
+
+	return path;
+}
+
 function renderArrowTailNormal(coord: SVGCoordinate, untilx: number, untily: number, angle: number): SVGPathElement {
 	let { x, y } = coord;
 	let dist = Math.sqrt((x - untilx) ** 2 + (y - untily) ** 2);
@@ -144,7 +158,7 @@ function renderArrowTailNormal(coord: SVGCoordinate, untilx: number, untily: num
 	return path;
 }
 
-export async function renderArrow(start: SVGRect, end: SVGRect, str: string, hook: boolean): Promise<[SVGPathElement, SVGPathElement, SVGPathElement, SVGForeignObjectElement]> {
+export async function renderArrow(start: SVGRect, end: SVGRect, str: string, hook: boolean, mapsto: boolean): Promise<[SVGPathElement, SVGPathElement, SVGPathElement, SVGForeignObjectElement]> {
 	let linestart = addBuffer(start, 20);
 	let tailstart = addBuffer(start, 5);
 	end = addBuffer(end, 5);
@@ -162,6 +176,8 @@ export async function renderArrow(start: SVGRect, end: SVGRect, str: string, hoo
 	let tail;
 	if (hook) {
 		tail = renderArrowTailHook(from2, from.x, from.y, angle);
+	} else if (mapsto) {
+		tail = renderArrowTailMapsto(from2, from.x, from.y, angle);
 	} else {
 		tail = renderArrowTailNormal(from2, from.x, from.y, angle);
 	}

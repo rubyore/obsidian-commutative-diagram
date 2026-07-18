@@ -9,6 +9,7 @@ export type Arrow = {
 	direction: string;
 	label: string;
 	hook: boolean;
+	mapsto: boolean
 }
 
 export type AbstractArrow = {
@@ -16,6 +17,7 @@ export type AbstractArrow = {
 	to: Cell
 	label: string;
 	hook: boolean;
+	mapsto: boolean;
 }
 
 // Represents a point inside the <svg>, starting at 0
