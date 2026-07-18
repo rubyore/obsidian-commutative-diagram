@@ -19,22 +19,22 @@ export class SettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-    display(): void {
-    let { containerEl } = this;
+	display(): void {
+		let { containerEl } = this;
 
-    containerEl.empty();
+		containerEl.empty();
 
-    new Setting(containerEl)
-        .setName('Toggle debug visuals')
-        .addToggle((toggle) => {
-            toggle.setValue(
-                this.plugin.settings.toggleDebug
-            )
-            .onChange(async () => {
-                this.plugin.settings.toggleDebug = !this.plugin.settings.toggleDebug;
-                await this.plugin.saveSettings();
-            })
-            
-        })
-    }
+		new Setting(containerEl)
+			.setName('Toggle debug visuals')
+			.addToggle((toggle) => {
+				toggle.setValue(
+					this.plugin.settings.toggleDebug
+				)
+					.onChange(async () => {
+						this.plugin.settings.toggleDebug = !this.plugin.settings.toggleDebug;
+						await this.plugin.saveSettings();
+					})
+
+			})
+	}
 }
