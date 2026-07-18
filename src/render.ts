@@ -158,7 +158,8 @@ function renderArrowTailNormal(coord: SVGCoordinate, untilx: number, untily: num
 	return path;
 }
 
-export async function renderArrow(start: SVGRect, end: SVGRect, str: string, hook: boolean, mapsto: boolean): Promise<[SVGPathElement, SVGPathElement, SVGPathElement, SVGForeignObjectElement]> {
+export async function renderArrow(start: SVGRect, end: SVGRect, arrow: AbstractArrow): Promise<[SVGPathElement, SVGPathElement, SVGPathElement, SVGForeignObjectElement]> {
+	let { label, hook, mapsto } = arrow;
 	let linestart = addBuffer(start, 20);
 	let tailstart = addBuffer(start, 5);
 	end = addBuffer(end, 5);
@@ -181,7 +182,7 @@ export async function renderArrow(start: SVGRect, end: SVGRect, str: string, hoo
 	} else {
 		tail = renderArrowTailNormal(from2, from.x, from.y, angle);
 	}
-	const label = renderMath(str, false);
+	const math = renderMath(label, false);
 	void finishRenderMath();
 
 	let centerx = (from2.x + to.x) / 2;
@@ -206,7 +207,7 @@ export async function renderArrow(start: SVGRect, end: SVGRect, str: string, hoo
 	);
 	FO.appendChild(flex)
 	flex.appendChild(div)
-	div.appendChild(label)
+	div.appendChild(math)
 
 	return [path, head, tail, FO];
 }
