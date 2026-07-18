@@ -17,3 +17,16 @@ export type Arrow = {
 	label: string;
 	isHook: boolean;
 }
+
+// Represents a point inside the <svg>, starting at 0
+export type SVGCoordinate = {
+	x: number;
+	y: number;
+}
+
+export type SVGRect = {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+}
