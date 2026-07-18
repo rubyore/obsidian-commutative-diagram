@@ -1,8 +1,7 @@
 import { Plugin } from 'obsidian';
 import { renderArrow, renderRect, renderSVGCanvas, renderTable } from './render';
-import { convertToSVGRect, getRawSize } from './helper';
+import { getRawSize } from './helper';
 import { DEFAULT_SETTINGS, PluginSettings, SettingTab } from './settings';
-import { parseTikzSyntax } from './parser';
 
 export default class ExamplePlugin extends Plugin {
 	settings!: PluginSettings;
@@ -13,8 +12,7 @@ export default class ExamplePlugin extends Plugin {
 
 		this.registerMarkdownCodeBlockProcessor('tikzcd', async (source, el, ctx) => {
 
-			let cells = parseTikzSyntax(source);
-			let [table, objects, arrows] = await renderTable(cells);
+			let [table, objects, arrows] = await renderTable(source);
 			el.appendChild(table);
 			// Wait for all objects to be in the layout
 			for (let obj of objects) {
@@ -33,8 +31,8 @@ export default class ExamplePlugin extends Plugin {
 						'width': `${w - 60}px`,
 						'height': `${h - 60}px`,
 					});
-				});
-			});
+				})
+			})
 
 			let tablebbox = await getRawSize(table);
 
@@ -43,8 +41,7 @@ export default class ExamplePlugin extends Plugin {
 
 			if (this.settings.toggleDebug) {
 				objects.forEach(obj => {
-					let rect = obj.getBoundingClientRect();
-					svg.appendChild(renderRect(convertToSVGRect(rect, el)))
+					svg.appendChild(renderRect(obj.getBoundingClientRect(), el))
 				})
 				svg.addClass('commutative-diagram-svg-debug')
 			}
@@ -55,7 +52,7 @@ export default class ExamplePlugin extends Plugin {
 
 				let xrect = await getRawSize(from);
 				let yrect = await getRawSize(to)
-				let [path, head, tail, label] = await renderArrow(convertToSVGRect(xrect, el), convertToSVGRect(yrect, el), arrow.label, arrow.hook);
+				let [path, head, tail, label] = await renderArrow(xrect, yrect, el, arrow.label, arrow.hook);
 				svg.appendChild(path)
 				svg.appendChild(head)
 				svg.appendChild(label)

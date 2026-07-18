@@ -1,13 +1,13 @@
 import { finishRenderMath, renderMath } from "obsidian";
 import { addBuffer, computeIntersections } from "./helper";
-import { targetCoordinates } from "./parser";
-import { AbstractArrow, Cell, SVGCoordinate } from "./types";
-import { SVGRect } from "./types";
+import { parseTikzSyntax, targetCoordinates } from "./parser";
+import { AbstractArrow } from "./types";
 
 const textColor = document.body.getCssPropertyValue("--text-normal");
 
-export async function renderTable(cells: Cell[][]): Promise<[HTMLTableElement, HTMLElement[], AbstractArrow[]]> {
+export async function renderTable(source: string): Promise<[HTMLTableElement, HTMLElement[], AbstractArrow[]]> {
 
+	const grid = parseTikzSyntax(source);
 	const objects: HTMLElement[] = [];
 	const arrows: AbstractArrow[] = [];
 
@@ -17,7 +17,7 @@ export async function renderTable(cells: Cell[][]): Promise<[HTMLTableElement, H
 
 	const body = table.createEl('tbody');
 
-	for (let row of cells) {
+	for (let row of grid) {
 		const tr = body.createEl('tr');
 		for (let cell of row) {
 			const td = tr.createEl('td', { cls: 'commutative-diagram-td' })
@@ -33,7 +33,7 @@ export async function renderTable(cells: Cell[][]): Promise<[HTMLTableElement, H
 				let { row, col } = targetCoordinates(cell, arrow.direction)
 				arrows.push({
 					from: cell,
-					to: cells[row]![col]!,
+					to: grid[row]![col]!,
 					label: arrow.label,
 					hook: arrow.isHook,
 				})
@@ -68,12 +68,13 @@ export async function renderCleanMath(latex: string) {
 	return html;
 }
 
-export function renderRect(rect: SVGRect): SVGRectElement {
+export function renderRect(rect: DOMRect, el: HTMLElement): SVGRectElement {
 	let { x, y, width, height } = rect;
+	let offset = el.getBoundingClientRect();
 	// eslint-disable-next-line obsidianmd/prefer-create-el
 	let r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-	r.setAttribute('x', `${x}`)
-	r.setAttribute('y', `${y}`)
+	r.setAttribute('x', `${x - offset.x}`)
+	r.setAttribute('y', `${y - offset.y}`)
 	r.setAttribute('width', `${width}`)
 	r.setAttribute('height', `${height}`)
 	r.setAttribute('stroke', `${textColor}`)
@@ -82,86 +83,78 @@ export function renderRect(rect: SVGRect): SVGRectElement {
 	return r;
 }
 
-async function renderLine(start: SVGRect, end: SVGRect): Promise<{
-	path: SVGPathElement,
-	end: SVGCoordinate,
-}> {
+async function renderLine(start: DOMRect, end: DOMRect, el: HTMLElement) {
+	let offset = el.getBoundingClientRect();
 	let { from, to } = computeIntersections(start, end)
 
 	// eslint-disable-next-line obsidianmd/prefer-create-el
 	let path = document.createElementNS("http://www.w3.org/2000/svg", 'path');
-	path.setAttribute('d', `M ${from.x} ${from.y} L ${to.x} ${to.y}`)
+	path.setAttribute('d', `M ${from.x - offset.x} ${from.y - offset.y} L ${to.x - offset.x} ${to.y - offset.y}`)
 	path.setAttribute('stroke', `${textColor}`)
 	path.setAttribute('fill', `${textColor}`)
 
-	return {
-		path: path, 
-		end: { x: to.x, y: to.y}
-	}
+	return { path: path, endx: to.x - offset.x, endy: to.y - offset.y }
 }
 
-function renderArrowHead(coord: SVGCoordinate, angle: number): SVGPathElement {
-	let { x, y } = coord;
+function renderArrowHead(x: number, y: number, angle: number): SVGPathElement {
 	// eslint-disable-next-line obsidianmd/prefer-create-el
 	let path = document.createElementNS("http://www.w3.org/2000/svg", 'path');
-	path.setAttribute('d', `M ${x - 7} ${y - 7} A 7 7 0 0 0 ${x} ${y} M ${x} ${y} A 7 7 0 0 0 ${x - 7} ${y + 7}`);
-	path.setAttribute('stroke', `${textColor}`);
-	path.setAttribute('fill', 'transparent');
-	path.setAttribute('transform', `rotate(${angle} ${x} ${y})`);
+	path.setAttribute('d', `M ${x - 7} ${y - 7} A 7 7 0 0 0 ${x} ${y} M ${x} ${y} A 7 7 0 0 0 ${x - 7} ${y + 7}`)
+	path.setAttribute('stroke', `${textColor}`)
+	path.setAttribute('fill', 'transparent')
+	path.setAttribute('transform', `rotate(${angle} ${x} ${y})`)
 
-	return path;
+	return path
 }
 
-function renderArrowTailHook(coord: SVGCoordinate, untilx: number, untily: number, angle: number): SVGPathElement {
-	let { x, y } = coord; 
+function renderArrowTailHook(x: number, y: number, untilx: number, untily: number, angle: number): SVGPathElement {
 	let dist = Math.sqrt((x - untilx) ** 2 + (y - untily) ** 2);
 	// eslint-disable-next-line obsidianmd/prefer-create-el
 	let path = document.createElementNS("http://www.w3.org/2000/svg", 'path');
 	path.setAttribute('d', `M ${x + 10} ${y - 10} A 5 5 0 0 0 ${x + 10} ${y} M ${x + 10} ${y} L ${x + dist} ${y}`);
 	path.setAttribute('stroke', `${textColor}`);
-	path.setAttribute('transform', `rotate(${angle} ${x} ${y})`);
+	path.setAttribute('transform', `rotate(${angle} ${x} ${y})`)
 
 	return path;
 }
 
-function renderArrowTailNormal(coord: SVGCoordinate, untilx: number, untily: number, angle: number): SVGPathElement {
-	let { x, y } = coord;
+function renderArrowTailNormal(x: number, y: number, untilx: number, untily: number, angle: number): SVGPathElement {
 	let dist = Math.sqrt((x - untilx) ** 2 + (y - untily) ** 2);
 	// eslint-disable-next-line obsidianmd/prefer-create-el
 	let path = document.createElementNS("http://www.w3.org/2000/svg", 'path');
 	path.setAttribute('d', `M ${x} ${y} L ${x + dist} ${y}`);
 	path.setAttribute('stroke', `${textColor}`);
-	path.setAttribute('transform', `rotate(${angle} ${x} ${y})`);
+	path.setAttribute('transform', `rotate(${angle} ${x} ${y})`)
 
 	return path;
 }
 
-export async function renderArrow(start: SVGRect, end: SVGRect, str: string, hook: boolean): Promise<[SVGPathElement, SVGPathElement, SVGPathElement, SVGForeignObjectElement]> {
+export async function renderArrow(start: DOMRect, end: DOMRect, el: HTMLElement, str: string, hook: boolean): Promise<[SVGPathElement, SVGPathElement, SVGPathElement, SVGForeignObjectElement]> {
 	let linestart = addBuffer(start, 20);
 	let tailstart = addBuffer(start, 5);
 	end = addBuffer(end, 5);
 
-	let { path, end: endpoint } = await renderLine(linestart, end);
+	let { path, endx, endy } = await renderLine(linestart, end, el);
 
+	let offset = el.getBoundingClientRect();
 	let { from, to } = computeIntersections(linestart, end);
+	let centerx = (from.x + to.x) / 2 - offset.x
+	let centery = (from.y + to.y) / 2 - offset.y
 
 	let angle = Math.atan2(
 		to.y - from.y, to.x - from.x
 	) / (2 * Math.PI) * 360
-	let head = renderArrowHead(endpoint, angle);
+	let head = renderArrowHead(endx, endy, angle);
 
-	let { from: from2 } = computeIntersections(tailstart, end);
+	let { from: from2, to: to2 } = computeIntersections(tailstart, end);
 	let tail;
 	if (hook) {
-		tail = renderArrowTailHook(from2, from.x, from.y, angle);
+		tail = renderArrowTailHook(from2.x - offset.x, from2.y - offset.y, from.x - offset.x, from.y - offset.y, angle);
 	} else {
-		tail = renderArrowTailNormal(from2, from.x, from.y, angle);
+		tail = renderArrowTailNormal(from2.x - offset.x, from2.y - offset.y, from.x - offset.x, from.y - offset.y, angle);
 	}
 	const label = renderMath(str, false);
 	void finishRenderMath();
-
-	let centerx = (from2.x + to.x) / 2;
-	let centery = (from2.y + to.y) / 2;
 
 	// eslint-disable-next-line obsidianmd/prefer-create-el
 	const FO = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
