@@ -1,10 +1,3 @@
-export type AbstractArrow = {
-	from: Cell;
-	to: Cell
-	label: string;
-	hook: boolean;
-}
-
 export type Cell = {
 	row: number;
 	col: number;
@@ -15,7 +8,14 @@ export type Cell = {
 export type Arrow = {
 	direction: string;
 	label: string;
-	isHook: boolean;
+	hook: boolean;
+}
+
+export type AbstractArrow = {
+	from: Cell;
+	to: Cell
+	label: string;
+	hook: boolean;
 }
 
 // Represents a point inside the <svg>, starting at 0

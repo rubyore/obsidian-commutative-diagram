@@ -6,7 +6,11 @@ import { SVGRect } from "./types";
 
 const textColor = document.body.getCssPropertyValue("--text-normal");
 
-export async function renderTable(cells: Cell[][]): Promise<[HTMLTableElement, HTMLElement[], AbstractArrow[]]> {
+export async function renderTable(cells: Cell[][]): Promise<{
+	table: HTMLTableElement,
+	objects: HTMLElement[],
+	arrows: AbstractArrow[],
+}> {
 
 	const objects: HTMLElement[] = [];
 	const arrows: AbstractArrow[] = [];
@@ -35,13 +39,17 @@ export async function renderTable(cells: Cell[][]): Promise<[HTMLTableElement, H
 					from: cell,
 					to: cells[row]![col]!,
 					label: arrow.label,
-					hook: arrow.isHook,
+					hook: arrow.hook,
 				})
 			})
 		}
 	}
 
-	return [table, objects, arrows];
+	return {
+		table: table, 
+		objects: objects,
+		arrows: arrows,
+	};
 }
 
 export function renderSVGCanvas(width: number, height: number): SVGSVGElement {

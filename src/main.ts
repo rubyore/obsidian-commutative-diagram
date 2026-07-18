@@ -14,7 +14,7 @@ export default class ExamplePlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor('tikzcd', async (source, el, ctx) => {
 
 			let cells = parseTikzSyntax(source);
-			let [table, objects, arrows] = await renderTable(cells);
+			let { table, objects, arrows } = await renderTable(cells);
 			el.appendChild(table);
 			// Wait for all objects to be in the layout
 			for (let obj of objects) {
@@ -54,15 +54,15 @@ export default class ExamplePlugin extends Plugin {
 				let to = (table.firstChild as HTMLElement).children[arrow.to.row]!.children[arrow.to.col]!.querySelector("mjx-container") as HTMLElement;
 
 				let xrect = await getRawSize(from);
-				let yrect = await getRawSize(to)
+				let yrect = await getRawSize(to);
 				let [path, head, tail, label] = await renderArrow(convertToSVGRect(xrect, el), convertToSVGRect(yrect, el), arrow.label, arrow.hook);
-				svg.appendChild(path)
-				svg.appendChild(head)
+				svg.appendChild(path);
+				svg.appendChild(head);
 				svg.appendChild(label)
-				svg.appendChild(tail)
+				svg.appendChild(tail);
 			}
 
-			el.addClass('commutative-diagram-el')
+			el.addClass('commutative-diagram-el');
 		})
 	}
 
